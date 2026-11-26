@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blind &amp; Brew - Hội viên</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#123D34; --felt-dark:#0C2B25; --cream:#F5EEDD; --brass:#D9A94F;
+  --ink:#2B1E16; --muted:#6B5D4F; --line:#E4DAC4; --card:#FFFFFF;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45;padding-bottom:84px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0}
+main{max-width:520px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.member{background:var(--felt);color:var(--cream);border-radius:18px;padding:20px;margin-bottom:12px}
+.member .brand{font-size:12px;letter-spacing:3px;color:var(--brass);font-weight:600}
+.member .name{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:28px;margin-top:6px}
+.member .code{font-family:Fraunces,Georgia,serif;font-size:20px;letter-spacing:2px;margin-top:2px}
+.stats{display:flex;gap:10px;margin-top:16px}
+.stat{flex:1;background:var(--felt-dark);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-family:Fraunces,Georgia,serif;font-size:26px}
+.stat span{font-size:12px;color:var(--brass)}
+.pill{display:inline-block;background:var(--brass);color:var(--ink);font-weight:600;font-size:12px;border-radius:999px;padding:4px 12px;margin-top:10px}
+.bar{height:8px;border-radius:4px;background:var(--felt-dark);margin-top:14px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass)}
+.hint{font-size:13px;color:var(--brass);margin-top:6px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.row + .row{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.title{font-weight:600}
+.sub{font-size:13px;color:var(--muted)}
+button{font:600 14px Inter,system-ui,sans-serif;min-height:44px;border-radius:10px;border:0;padding:0 16px;cursor:pointer}
+button.primary{background:var(--felt);color:var(--cream)}
+button.alt{background:var(--brass);color:var(--ink)}
+button.ghost{background:#fff;color:var(--felt);border:2px solid var(--felt)}
+button:disabled{opacity:.5;cursor:default}
+.code-chip{font-family:Fraunces,Georgia,serif;font-size:22px;letter-spacing:3px;color:var(--felt)}
+.plus{color:#1E6B4F;font-weight:600}
+.minus{color:#9A3B2B;font-weight:600}
+.rank-row.me{background:#FBF3DC;border-radius:10px;padding:8px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;color:var(--muted);border-radius:0;min-height:56px;border-top:3px solid transparent}
+nav button.on{color:var(--felt);border-top-color:var(--brass)}
+#toast{position:fixed;left:16px;right:16px;bottom:96px;background:var(--ink);color:#fff;border-radius:10px;padding:12px 14px;text-align:center;display:none}
+.empty{text-align:center;color:var(--muted);padding:24px 8px}
+</style>
+</head>
+<body>
+<main id="view"></main>
+<nav id="tabs" aria-label="Điều hướng">
+  <button data-tab="home" class="on">Thẻ</button>
+  <button data-tab="rewards">Quà</button>
+  <button data-tab="events">Sự kiện</button>
+  <button data-tab="history">Lịch sử</button>
+  <button data-tab="rank">Xếp hạng</button>
+</nav>
+<div id="toast" role="status"></div>
+
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+const initData = tg ? tg.initData : "";
+// Địa chỉ API của bot (HTTPS, không có dấu / ở cuối). Để "" nếu chính bot phục vụ file này.
+// Ví dụ: "https://api.ten-mien.vn" hoặc "https://xxxx.trycloudflare.com"
+const API_BASE = "";
+const view = document.getElementById("view");
+let me = null;
+
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return el;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => (t.style.display = "none"), 2600);
+}
+
+async function api(path, body) {
+  const opt = { headers: { Authorization: "tma " + initData } };
+  if (body) {
+    opt.method = "POST";
+    opt.body = JSON.stringify(body);
+    opt.headers["Content-Type"] = "application/json";
+  }
+  const r = await fetch(API_BASE + path, opt);
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.message || data.error || "Có lỗi xảy ra");
+  return data;
+}
+
+function vnd(n) { return n.toLocaleString("vi-VN") + "đ"; }
+
+function showError(e) {
+  view.replaceChildren(h("div", { class: "card empty" }, e.message || String(e)));
+}
+
+async function home() {
+  me = await api("/api/me");
+  const pct = me.next_rank ? Math.min(100, Math.round((me.spend / (me.spend + me.next_need)) * 100)) : 100;
+  const card = h("div", { class: "member" },
+    h("div", { class: "brand" }, me.team.toUpperCase()),
+    h("div", { class: "name" }, me.name),
+    h("div", { class: "code" }, me.code),
+    h("span", { class: "pill" }, "Hạng " + me.rank),
+    h("div", { class: "stats" },
+      h("div", { class: "stat" }, h("b", {}, me.points), h("span", {}, "điểm")),
+      h("div", { class: "stat" }, h("b", {}, me.turns), h("span", {}, "lượt chơi"))),
+    h("div", { class: "bar", role: "img", "aria-label": "Tiến độ lên hạng " + pct + "%" }, h("i", { style: "width:" + pct + "%" })),
+    h("div", { class: "hint" }, me.next_rank
+      ? "Còn " + vnd(me.next_need) + " nữa để lên hạng " + me.next_rank + " (chi tiêu 90 ngày)"
+      : "Bạn đang ở hạng cao nhất"));
+  const codes = h("div", { class: "card" }, h("h3", {}, "Mã quà đang chờ"),
+    me.codes.length
+      ? me.codes.map((c) => h("div", { class: "row" }, h("div", {}, h("div", { class: "title" }, c.name), h("div", { class: "sub" }, "Đưa mã cho nhân viên tại quầy")), h("div", { class: "code-chip" }, c.code)))
+      : h("div", { class: "sub", style: "margin-top:8px" }, "Chưa có mã nào. Đổi quà ở mục Quà."));
+  const invite = h("div", { class: "card" }, h("h3", {}, "Mời bạn"),
+    h("div", { class: "sub", style: "margin:6px 0 12px" }, "Bạn của bạn có hóa đơn đầu tiên, bạn nhận điểm thưởng."),
+    h("button", { class: "alt", onclick: () => {
+      const url = "https://t.me/share/url?url=" + encodeURIComponent(me.referral_link) + "&text=" + encodeURIComponent("Cùng đến " + me.team + " nhé");
+      tg ? tg.openTelegramLink(url) : window.open(url, "_blank");
+    } }, "Gửi link giới thiệu"));
+  view.replaceChildren(card, codes, invite);
+}
+
+async function rewards() {
+  const [list, p] = await Promise.all([api("/api/rewards"), api("/api/me")]);
+  me = p;
+  view.replaceChildren(h("div", { class: "card" },
+    h("h3", {}, "Đổi quà"), h("div", { class: "sub" }, "Bạn có " + me.points + " điểm. Quà chỉ là nước hoặc lượt chơi, không quy đổi ra tiền."),
+    list.map((r) => h("div", { class: "row" },
+      h("div", {}, h("div", { class: "title" }, r.name), h("div", { class: "sub" }, r.cost + " điểm")),
+      h("button", { class: "primary", disabled: me.points < r.cost ? "" : null, onclick: async (ev) => {
+        ev.target.disabled = true;
+        try { const res = await api("/api/redeem", { reward_id: r.id }); toast(res.ok ? "Đã tạo mã. Xem trong chat hoặc mục Thẻ." : res.message); }
+        catch (e) { toast(e.message); }
+        rewards();
+      } }, "Đổi")))));
+}
+
+async function events() {
+  const list = await api("/api/events");
+  view.replaceChildren(h("div", { class: "card" }, h("h3", {}, "Sự kiện sắp tới"),
+    list.length ? list.map((e) => h("div", { class: "row" },
+      h("div", {}, h("div", { class: "title" }, e.title), h("div", { class: "sub" }, e.starts_at + (e.left === null ? "" : " · còn " + e.left + " chỗ"))),
+      h("button", { class: e.booked ? "ghost" : "primary", disabled: e.booked || e.left === 0 ? "" : null, onclick: async () => {
+        try { const res = await api("/api/book", { event_id: e.id }); toast(res.message); } catch (er) { toast(er.message); }
+        events();
+      } }, e.booked ? "Đã giữ chỗ" : e.left === 0 ? "Hết chỗ" : "Giữ chỗ")))
+      : h("div", { class: "empty" }, "Chưa có sự kiện. Quán sẽ thông báo sớm.")));
+}
+
+async function historyTab() {
+  const list = await api("/api/history");
+  view.replaceChildren(h("div", { class: "card" }, h("h3", {}, "Lịch sử điểm"),
+    list.length ? list.map((x) => h("div", { class: "row" },
+      h("div", {}, h("div", { class: "title" }, x.reason), h("div", { class: "sub" }, x.at)),
+      h("div", { class: x.delta >= 0 ? "plus" : "minus" }, (x.delta >= 0 ? "+" : "") + x.delta)))
+      : h("div", { class: "empty" }, "Chưa có giao dịch nào.")));
+}
+
+async function rank() {
+  const d = await api("/api/leaderboard");
+  view.replaceChildren(h("div", { class: "card" }, h("h3", {}, "Top sinh hoạt tháng " + d.month),
+    h("div", { class: "sub" }, "Theo điểm tích lũy, chỉ trao danh hiệu, không có thưởng tiền."),
+    d.rows.length ? d.rows.map((r, i) => h("div", { class: "row rank-row" + (r.me ? " me" : "") },
+      h("div", { class: "title" }, (i + 1) + ". " + r.name), h("div", {}, r.points + " điểm")))
+      : h("div", { class: "empty" }, "Tháng này chưa có ai trên bảng.")));
+}
+
+const TABS = { home, rewards, events, history: historyTab, rank };
+async function openTab(tab) {
+  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  try { await TABS[tab](); } catch (e) { showError(e); }
+}
+document.querySelectorAll("#tabs button").forEach((b) => b.addEventListener("click", () => openTab(b.dataset.tab)));
+
+if (!initData) showError(new Error("Hãy mở app từ trong Telegram (nút Hội viên của bot)."));
+else openTab("home");
+</script>
+</body>
+</html>
