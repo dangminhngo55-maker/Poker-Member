@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Member App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{--bg:#0c0a10;--card:#17131d;--card2:#211a29;--line:#2c2437;--pink:#ff4fa3;--gold:#f5c542;--tx:#f4f1f7;--mut:#9b91a9;--ok:#3ddc97}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+body{padding:0 14px calc(86px + env(safe-area-inset-bottom,0px));padding-top:env(safe-area-inset-top,0px)}
+.d{font-family:"Barlow Condensed","Arial Narrow",Impact,sans-serif;font-weight:800;font-style:italic;text-transform:uppercase}
+h1{font-size:32px;line-height:1.05;margin:16px 0 12px}h1 b{color:var(--pink)}
+h2{font-size:21px;margin:18px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0}
+.gold{border-color:var(--gold);background:linear-gradient(135deg,#2a2110,var(--card) 60%)}
+.hot{background:linear-gradient(135deg,#3a1030,var(--card) 70%);border-color:#5a2050}
+.row{display:flex;gap:10px;align-items:center}.sp{justify-content:space-between}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mut{color:var(--mut);font-size:13px}.big{font-size:44px;line-height:1}.gd{color:var(--gold)}.cy{color:#6fd3ff}.pk{color:var(--pink)}
+.btn{border:0;border-radius:12px;background:var(--pink);color:#1a0612;font-family:inherit;font-weight:700;font-size:14px;padding:11px 16px}
+.btn.o{background:none;border:1px solid var(--line);color:var(--tx)}.btn.w{width:100%}
+.pill{display:inline-block;background:var(--gold);color:#241a00;border-radius:999px;padding:4px 12px;font-weight:700;font-size:13px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:10px 0;padding-bottom:2px}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:none;color:var(--tx);border-radius:999px;padding:7px 14px;font-family:inherit;font-size:14px}
+.chip.on{background:#ff7a45;border-color:#ff7a45;color:#220b00;font-weight:700}
+.av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--gold));display:grid;place-items:center;font-weight:800;color:#1a0612;flex:none}
+.seat{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--line);margin-right:3px}.seat.f{background:var(--ok)}
+.bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--pink),var(--gold))}
+.pod{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin:12px 0}
+.pod .card{text-align:center;margin:0;padding:12px 6px}.pod .av{margin:0 auto 6px;width:52px;height:52px}
+.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.li:last-child{border:0}
+.no{width:26px;color:var(--mut);font-weight:700}.me{background:rgba(255,79,163,.12);border-radius:12px;padding-left:8px;padding-right:8px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(12,10,16,.96);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));backdrop-filter:blur(10px)}
+nav button{flex:1;border:0;background:none;color:var(--mut);font-family:inherit;font-size:11.5px;padding:6px 2px;border-radius:10px}
+nav button span{display:block;font-size:21px;line-height:1.2}nav button.on{color:var(--pink)}
+.set{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:16px;padding:14px;margin:8px 0;font-family:inherit;font-size:15px}
+.set small{display:block;color:var(--mut);font-size:12.5px}.set .ic{font-size:24px}
+.tg{margin-left:auto;width:46px;height:26px;border-radius:26px;background:var(--line);position:relative;flex:none}.tg:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}.tg.on{background:var(--ok)}.tg.on:after{left:23px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select{width:100%;border:1px solid var(--line);background:var(--card2);color:var(--tx);border-radius:12px;padding:12px;font-family:inherit;font-size:15px}
+.err{color:#ff6b6b;font-size:13px;min-height:18px;margin:8px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;place-items:center;z-index:9;padding:20px}.modal.on{display:grid}
+.modal .card{width:100%;max-width:340px;text-align:center;background:#fff;color:#111}.modal svg{width:100%;height:auto;display:block;margin:6px auto}
+#toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#fff;color:#111;border-radius:999px;padding:10px 18px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:10;max-width:90%;text-align:center}#toast.on{opacity:1}
+body.reg nav{display:none}body.reg{padding-bottom:24px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="nav"></nav>
+<div class="modal" id="qr"><div class="card"><div class="d" style="font-size:24px">Thẻ hội viên</div><div id="qrbox"></div><div id="qrcode" class="mut"></div><button class="btn w" data-a="qrx">Đóng</button></div></div>
+<div id="toast"></div>
+<script>
+/* ===== Cấu hình ===== */
+const CFG = { brand: "TH25", sub: "App Member" };
+/* Dữ liệu mẫu. Khi có backend, thay bằng dữ liệu thật (xem hàm load). */
+const DEMO = {
+  me: { name: "Minh", code: "TH02300", phone: "0935788981", wp: 0, water: 3, level: 3, xp: 40,
+        tickets: [{ n: "Vé MIX FREE BUY-IN", q: 1, exp: "23/12" }] },
+  events: [
+    { t: "Workshop 169", d: "Thứ 6, 27/11", h: "19:30", fee: "169K", seat: [34, 48], wp: 4 },
+    { t: "Workshop 249", d: "Thứ 7, 28/11", h: "19:30", fee: "249K", seat: [41, 48], wp: 6 },
+    { t: "Sit & Go Turbo", d: "Chủ nhật, 29/11", h: "15:00", fee: "2 WP", seat: [5, 9], wp: 4 },
+    { t: "Workshop 299", d: "Thứ 2, 30/11", h: "19:30", fee: "299K", seat: [12, 48], wp: 7 }],
+  tables: [
+    { n: "Bàn 1", g: "Workshop 169", blind: "600 / 1.200", lvl: 7, seat: [8, 9], t: "12:40" },
+    { n: "Bàn 2", g: "Workshop 169", blind: "600 / 1.200", lvl: 7, seat: [7, 9], t: "12:40" },
+    { n: "Bàn 3", g: "Sit & Go", blind: "200 / 400", lvl: 3, seat: [6, 9], t: "04:15" },
+    { n: "Bàn 4", g: "Đang chờ mở", blind: "", lvl: 0, seat: [2, 9], t: "" }],
+  rank: {
+    luc: [["Tuấn Phong", 312], ["Hải Đăng", 288], ["Minh Khang", 251], ["Gia Bảo", 230], ["Quốc Huy", 214], ["Thanh Tùng", 190], ["Đức Anh", 175], ["Việt Hùng", 160]],
+    lvl: [["Hải Đăng", 41], ["Tuấn Phong", 39], ["Gia Bảo", 35], ["Minh Khang", 33], ["Đức Anh", 30], ["Quốc Huy", 28], ["Thanh Tùng", 26], ["Việt Hùng", 22]],
+    mua: [["Minh Khang", 96], ["Tuấn Phong", 90], ["Quốc Huy", 84], ["Hải Đăng", 77], ["Gia Bảo", 70], ["Đức Anh", 61], ["Thanh Tùng", 55], ["Việt Hùng", 48]] },
+  hist: [{ d: "26/11", t: "Điểm nước", v: "+3" }, { d: "22/11", t: "Kích hoạt app", v: "+1 vé MIX FREE BUY-IN" }]
+};
+let D = DEMO;
+async function load() {
+  /* Khi có backend: D = await (await fetch(API_URL + "/me", { headers: { "X-Init-Data": tg.initData } })).json(); */
+  return DEMO;
+}
+
+/* ===== Tiện ích ===== */
+const $ = s => document.querySelector(s), tg = window.Telegram && Telegram.WebApp;
+try { if (tg) { tg.ready(); tg.setHeaderColor("#0c0a10"); tg.setBackgroundColor("#0c0a10"); } } catch (e) {}
+const buzz = t => { try { tg.HapticFeedback.notificationOccurred(t); } catch (e) {} };
+const store = { get(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v === null ? d : v; } catch (e) { return d; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const toast = m => { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), 2200); };
+const ini = n => n.trim().split(/\s+/).slice(-1)[0][0].toUpperCase();
+const fmt = n => n.toLocaleString("vi-VN");
+const seats = ([a, b]) => Array.from({ length: b }, (_, i) => '<i class="seat' + (i < a ? " f" : "") + '"></i>').join("");
+
+/* ===== Các màn hình ===== */
+const S = { tab: "home", rcat: "luc", rper: "Tuần này", notif: store.get("notif", true) };
+const TABS = [["home", "Trang chủ", "💎"], ["cal", "Lịch", "📅"], ["tbl", "Bàn chơi", "🎲"], ["rank", "Xếp hạng", "🏆"], ["me", "Tôi", "👤"]];
+
+const V = {
+  home() {
+    const m = D.me, e = D.events[0], tk = m.tickets[0];
+    return '<h1 class="d">Xin chào, <b>' + m.name + '</b></h1>' +
+      '<div class="g2"><div class="card"><div class="mut">Điểm WP</div><div class="d big gd">' + m.wp + '</div></div>' +
+      '<div class="card"><div class="mut">Điểm nước</div><div class="d big cy">' + m.water + '</div></div></div>' +
+      (tk ? '<div class="card gold"><div class="row sp"><span class="pill">🎁 ' + tk.n + ' × ' + tk.q + '</span><span class="mut">hạn ' + tk.exp + '</span></div><p class="mut" style="margin:8px 0 0">Đưa thẻ QR cho thu ngân để dùng vé.</p></div>' : '') +
+      '<h2 class="d">Sắp diễn ra</h2>' + ev(e, 0) +
+      '<div class="card hot"><div class="d" style="font-size:22px">Level ' + m.level + '</div><div class="bar" style="margin:8px 0"><i style="width:' + m.xp + '%"></i></div><div class="mut">Còn ' + (100 - m.xp) + ' điểm kinh nghiệm để lên level ' + (m.level + 1) + '</div></div>';
+  },
+  cal() { return '<h1 class="d">Lịch <b>giải đấu</b></h1>' + D.events.map(ev).join(""); },
+  tbl() {
+    return '<h1 class="d">Bàn <b>chơi</b></h1><p class="mut">Cập nhật trực tiếp tình trạng ghế và level blind.</p>' + D.tables.map(t =>
+      '<div class="card"><div class="row sp"><div><div class="d" style="font-size:22px">' + t.n + '</div><div class="mut">' + t.g + '</div></div>' +
+      (t.lvl ? '<div style="text-align:right"><div class="d pk" style="font-size:22px">' + t.blind + '</div><div class="mut">Level ' + t.lvl + ' · còn ' + t.t + '</div></div>' : '<span class="pill">Chờ mở</span>') +
+      '</div><div style="margin-top:10px">' + seats(t.seat) + ' <span class="mut">' + t.seat[0] + '/' + t.seat[1] + ' ghế</span></div></div>').join("");
+  },
+  rank() {
+    const cats = [["luc", "Lực chiến"], ["lvl", "Level"], ["mua", "Rank mùa"]], per = ["Tuần này", "Tuần trước", "Tháng này", "Toàn thời gian"];
+    const L = D.rank[S.rcat], unit = S.rcat === "lvl" ? "Lv" : S.rcat === "mua" ? "điểm" : "WP";
+    const pc = (i, c) => '<div class="card ' + c + '"><div class="av">' + ini(L[i][0]) + '</div><div class="d" style="font-size:' + (i ? 15 : 18) + 'px">' + L[i][0] + '</div><div class="mut">#' + (i + 1) + ' · ' + L[i][1] + ' ' + unit + '</div></div>';
+    return '<h1 class="d">Bảng <b>xếp hạng</b></h1>' +
+      '<div class="chips">' + cats.map(c => '<button class="chip' + (S.rcat === c[0] ? " on" : "") + '" data-a="rcat:' + c[0] + '">' + c[1] + '</button>').join("") + '</div>' +
+      '<div class="chips">' + per.map(p => '<button class="chip' + (S.rper === p ? " on" : "") + '" data-a="rper:' + p + '">' + p + '</button>').join("") + '</div>' +
+      '<div class="pod">' + pc(1, "") + pc(0, "gold") + pc(2, "") + '</div>' +
+      '<div class="card">' + L.slice(3).map((r, i) => '<div class="li"><span class="no">' + (i + 4) + '</span><div class="av" style="width:36px;height:36px;font-size:14px">' + ini(r[0]) + '</div><b style="flex:1">' + r[0] + '</b><span class="gd">' + r[1] + ' ' + unit + '</span></div>').join("") +
+      '<div class="li me"><span class="no">12</span><div class="av" style="width:36px;height:36px;font-size:14px">' + ini(D.me.name) + '</div><b style="flex:1">' + D.me.name + ' (bạn)</b><span class="gd">0 ' + unit + '</span></div></div>';
+  },
+  me() {
+    const m = D.me;
+    return '<h1 class="d">Ví &amp; <b>hồ sơ</b></h1>' +
+      '<button class="set" style="background:var(--pink);color:#1a0612;border:0" data-a="qr"><span class="ic">▣</span><div><b class="d" style="font-size:22px">Thẻ QR hội viên</b><small style="color:#4a1030">Đưa thu ngân quét khi buy-in, đổi vé, đổi WP</small></div></button>' +
+      '<div class="card hot"><div class="row"><div class="av" style="width:64px;height:64px;font-size:26px">' + ini(m.name) + '</div><div><div class="d" style="font-size:26px">' + m.name + '</div><div class="mut">' + m.code + ' · ' + m.phone + '</div></div></div>' +
+      '<div class="g2" style="margin-top:12px"><div class="card" style="margin:0"><div class="mut">Điểm WP</div><div class="d big gd">' + m.wp + '</div></div><div class="card" style="margin:0"><div class="mut">Điểm nước</div><div class="d big cy">' + m.water + '</div></div></div></div>' +
+      '<button class="set" data-a="soon"><span class="ic">👥</span><div><b>Bạn bè</b><small>Mã kết bạn, ai được xem lịch của bạn</small></div></button>' +
+      '<button class="set" data-a="soon"><span class="ic">📞</span><div><b>Đổi SĐT hội viên</b><small>Giữ nguyên điểm, vé, lịch sử</small></div></button>' +
+      '<button class="set" data-a="notif"><span class="ic">🔔</span><div><b>Thông báo qua bot</b><small>Báo khi điểm thay đổi và có ưu đãi</small></div><i class="tg' + (S.notif ? " on" : "") + '"></i></button>' +
+      '<button class="set" data-a="soon"><span class="ic">💬</span><div><b>Góp ý, báo lỗi</b><small>Gửi thẳng cho bộ phận chăm sóc khách hàng</small></div></button>' +
+      '<h2 class="d">Lịch sử</h2><div class="card">' + D.hist.map(h => '<div class="li"><span class="mut" style="width:44px">' + h.d + '</span><b style="flex:1">' + h.t + '</b><span class="gd">' + h.v + '</span></div>').join("") + '</div>';
+  },
+  reg() {
+    const o = a => a.map(x => "<option>" + x + "</option>").join("");
+    return '<h1 class="d">Thông tin <b>hội viên</b></h1><p class="mut">Điền để hoàn tất đăng ký. Chỉ họ tên là bắt buộc.</p><div class="card">' +
+      '<label>Số điện thoại</label><input id="rphone" readonly><label>Họ và tên *</label><input id="rname" autocomplete="name" placeholder="Nguyễn Văn A">' +
+      '<label>Ngày sinh</label><input id="rdob" type="date"><label>Email</label><input id="remail" type="email" inputmode="email" placeholder="ten@email.com">' +
+      '<label>Khu vực sinh sống</label><input id="rarea" placeholder="Ví dụ: Đà Nẵng"><label>Bạn quan tâm</label><select id="rgoal">' + o(["Workshop", "Sit & Go", "Cả hai"]) + '</select>' +
+      '<label>Mức độ trải nghiệm</label><select id="rlevel">' + o(["Mới bắt đầu", "Đã chơi vài lần", "Chơi thường xuyên"]) + '</select><div class="err" id="rerr"></div><button class="btn w" data-a="send">Gửi thông tin</button></div>';
+  }
+};
+function ev(e, i) {
+  const pct = Math.round(e.seat[0] / e.seat[1] * 100);
+  return '<div class="card ' + (i === 0 ? "hot" : "") + '"><div class="row sp"><div class="d" style="font-size:23px">' + e.t + '</div><span class="pill">' + e.fee + '</span></div>' +
+    '<div class="mut">' + e.d + ' · ' + e.h + ' · +' + e.wp + ' WP</div><div class="bar" style="margin:10px 0 6px"><i style="width:' + pct + '%"></i></div>' +
+    '<div class="row sp"><span class="mut">' + e.seat[0] + '/' + e.seat[1] + ' chỗ đã giữ</span><button class="btn" data-a="book:' + e.t + '">Giữ chỗ</button></div></div>';
+}
+
+/* ===== Điều khiển ===== */
+function render() {
+  $("#app").innerHTML = V[S.tab]();
+  $("#nav").innerHTML = TABS.map(t => '<button class="' + (S.tab === t[0] ? "on" : "") + '" data-a="tab:' + t[0] + '"><span>' + t[2] + '</span>' + t[1] + '</button>').join("");
+}
+const A = {
+  tab(v) { S.tab = v; render(); scrollTo(0, 0); },
+  rcat(v) { S.rcat = v; render(); }, rper(v) { S.rper = v; render(); },
+  book(v) { buzz("success"); toast("Đã gửi yêu cầu giữ chỗ: " + v + " (bản demo)"); },
+  soon() { toast("Tính năng sẽ có khi nối với hệ thống thật"); },
+  notif() { S.notif = !S.notif; store.set("notif", S.notif); render(); },
+  qr() {
+    const m = D.me; let h = "";
+    try { const q = qrcode(0, "M"); q.addData(m.code); q.make(); h = q.createSvgTag(6, 0); } catch (e) { h = '<div class="d" style="font-size:40px;margin:20px 0">' + m.code + "</div>"; }
+    $("#qrbox").innerHTML = h; $("#qrcode").textContent = m.name + " · " + m.code; $("#qr").classList.add("on");
+  },
+  qrx() { $("#qr").classList.remove("on"); },
+  send() {
+    const d = { name: $("#rname").value.trim(), dob: $("#rdob").value, email: $("#remail").value.trim(), area: $("#rarea").value.trim(), goal: $("#rgoal").value, level: $("#rlevel").value };
+    const er = $("#rerr");
+    if (d.name.length < 2) { er.textContent = "Nhập họ và tên."; return; }
+    if (d.email && !/^\S+@\S+\.\S+$/.test(d.email)) { er.textContent = "Email chưa đúng định dạng."; return; }
+    if (!tg || tg.platform === "unknown") { er.textContent = "Hãy mở form từ nút trong chat Telegram với bot."; return; }
+    er.textContent = ""; buzz("success"); tg.sendData(JSON.stringify(d));
+  }
+};
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el) return;
+  const i = el.dataset.a.indexOf(":"), k = i < 0 ? el.dataset.a : el.dataset.a.slice(0, i), v = i < 0 ? "" : el.dataset.a.slice(i + 1);
+  if (A[k]) A[k](v);
+});
+
+(async () => {
+  const qs = new URLSearchParams(location.search);
+  if (qs.get("reg")) {                                   /* mở từ nút bàn phím của bot: form đăng ký */
+    document.body.classList.add("reg"); S.tab = "reg"; render(); $("#nav").innerHTML = "";
+    $("#rphone").value = qs.get("phone") || "";
+    const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+    if (u) $("#rname").value = [u.first_name, u.last_name].filter(Boolean).join(" ");
+    if (tg) tg.expand();
+    return;
+  }
+  D = await load(); render();
+})();
+</script>
+</body>
+</html>
